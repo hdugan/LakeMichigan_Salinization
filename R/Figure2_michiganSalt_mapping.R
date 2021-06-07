@@ -32,10 +32,8 @@ lakeMI_sf = st_read('GIS/LakeMichiganShape.geojson', stringsAsFactors = F)
 
 #### Lat/Long Map of WQP chloride ####
 map1 = ggplot(wqp_sf) +
-  # annotation_map_tile(type = world_gray, zoom = 9) + # Esri Basemap
+  annotation_map_tile(type = world_gray, zoom = 9) + # Esri Basemap
   geom_sf(data = catchments_sf_simple, fill = alpha('seagreen1',0.1), size = 0.2) +
-  # geom_sf(aes(color = Result_discrete), alpha = 1,
-  #         size = 2, stroke = 0) +
   geom_sf(data = lakeMI_sf, size = 0.2, fill = alpha('lightsteelblue1',0.8)) +
   geom_sf(aes(fill = Result_discrete), alpha = 1,
           size = 1.5, stroke = 0.1, shape = 21) +
@@ -54,11 +52,9 @@ map1 = ggplot(wqp_sf) +
         legend.key.size = unit(0.6,"line"),
         text = element_text(size=10))
 
-# ggsave(map1, filename = 'Figures/Map_WQPdata_4269.png',width = 6, height = 8)
-
 #### Lat/Long Map of Tributary chloride####
 map2 = ggplot(wqp_sf) +
-  # annotation_map_tile(type = world_gray, zoom = 9) + # Esri Basemap
+  annotation_map_tile(type = world_gray, zoom = 9) + # Esri Basemap
   geom_sf(data = lakeMI_sf, size = 0.2, fill = alpha('lightsteelblue1',0.8)) +
   geom_sf(data = catchments_sf_simple, fill = alpha('seagreen1',0.1), size = 0.2) +
   geom_sf(data = tributary_sf, aes(fill = Result_discrete), alpha = 1,
@@ -82,5 +78,3 @@ map2 = ggplot(wqp_sf) +
 map2 + map1 + plot_layout(guides = 'collect') & theme(legend.position = 'bottom')
 
 ggsave(filename = 'Figures/Figure2_Map_LakeMichigan_Cl.png',width = 6.5, height = 4.5, dpi = 600)
-# copy the file to Overleaf Dropbox 
-file.copy('Figures/Figure2_Map_LakeMichigan_Cl.png', '/Users/hilarydugan/Dropbox/Apps/Overleaf/Lake Michigan Chloride/Figures/', overwrite = TRUE)

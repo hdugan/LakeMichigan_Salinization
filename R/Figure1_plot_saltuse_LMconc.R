@@ -38,7 +38,5 @@ p2 + p1 +
   theme(plot.tag = element_text(size = 8))
 
 ggsave('Figures/Figure1_LakeMichigan_WatershedSaltUse_Choride.png',width = 6.5, height = 2.6, units = 'in', dpi = 500)
-# copy the file to Overleaf Dropbox 
-ggsave('~/Dropbox/Apps/Overleaf/Lake Michigan Chloride/Figures/Figure1_LakeMichigan_WatershedSaltUse_Choride.png',width = 6.5, height = 2.6, units = 'in', dpi = 500)
 
 

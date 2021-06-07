@@ -4,6 +4,8 @@ library(raster)
 
 # All data obtained from Estimates of Road Salt Application across the Conterminous United States, 1992-2015
 # https://www.sciencebase.gov/catalog/item/5b15a50ce4b092d9651e22b9
+# Must download 1992_2015 geotiff files to get this code to work (~150 Mb)
+
 years = 1992:2015
 
 saltuse.df = data.frame(years = years, saltuse_metton = NA)
