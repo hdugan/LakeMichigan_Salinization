@@ -54,7 +54,7 @@ catchmentLabels_a = catchmentNames %>%
 catchmentLabels_b = catchmentNames %>% 
   filter(!Name %in% c('Pensaukee River','East Twin River','Portage-Burns Waterway', 'Oconto River','White River','Ford River','Kalamazoo River'))
 
-ggplot(wqp.catchments.n) +
+p1 = ggplot(outletDist.df) +
   geom_hline(yintercept = 0, linetype = 2, size = 0.2) +
   geom_vline(aes(xintercept = logArea), linetype = 1, size = 0.1, col = 'grey80') +
   # All Tributary points 
@@ -65,7 +65,7 @@ ggplot(wqp.catchments.n) +
                size = 0.2, outlier.size = 0.5, outlier.shape = 21, outlier.stroke = 0.2, na.rm = TRUE,
                position = position_identity()) +
   # Points matching WQP
-  geom_point(data = tributary_sf %>% filter(hydroID_GLAHF %in% wqp.catchments.n$hydroID_GLAHF),
+  geom_point(data = tributary_sf %>% filter(hydroID_GLAHF %in% outletDist.df$hydroID_GLAHF),
     aes(x = log(Areakm2), chloride), size = 0.8, color = 'red4', fill = 'gold', shape = 21) +
   
   scale_x_continuous(expand = c(0,0.1), sec.axis = dup_axis(breaks = catchmentNames$logArea, labels = catchmentNames$Name),
@@ -84,5 +84,45 @@ ggplot(wqp.catchments.n) +
   ylim(-250,1000) +
   NULL
 
-ggsave('Figures/Figure3_Cl_comparison.png',width = 6.5, height = 5, dpi = 500)
+ggsave(plot = p1, 'Figures/Figure3_Cl_comparison.png',width = 6.5, height = 5, dpi = 500)
+
+
+# Watershed comparison between WQP data and Tributary data 
+# get distance from outlet 
+outletDist = list()
+hydroids = unique(wqp.catchments$hydroID_GLAHF)
+for (i in 1:length(hydroids)) {
+  river = wqp.catchments %>% filter(hydroID_GLAHF == hydroids[i])
+  # Points close to outlet
+  outletPoint = tributary_sf %>% filter(hydroID_GLAHF == hydroids[i]) %>% slice(1)
+  if(nrow(outletPoint) == 0) {next}
+  outletDist[[i]] = river %>% mutate(distanceOutlet_m = river %>% st_distance(outletPoint, by_element = TRUE)) 
+}
+
+# hydroids[which(!hydroids %in% unique(outletDist.df$hydroID_GLAHF))]
+outletDist.df <- dplyr::bind_rows(outletDist)
+WQP_tribs = outletDist.df %>% filter(distanceOutlet_m < units::set_units(1000, "m")) %>% 
+  left_join(tribMean)
+
+WQP_tribs.median = WQP_tribs %>% group_by(hydroID_GLAHF, Name, streamName) %>% 
+  summarise_if(is.numeric, median, na.rm = TRUE) %>% 
+  filter(Name != 'Susan Creek')
+
+p2 = ggplot(WQP_tribs.median) +
+  geom_abline(alpha = 0.5) +
+  geom_point(aes(x = Result, y = chloride, fill = urban),  alpha = 1,
+             size = 2, stroke = 0.1, shape = 21) +
+  scale_fill_distiller(palette = 'Spectral', name = '% Urban') +
+  xlab(bquote(Median~Watershed~Chloride ~ (mg~L^-1))) +
+  ylab(bquote(Tributary~Chloride ~ (mg~L^-1))) +
+  theme_bw(base_size = 8) +
+  theme(legend.position = c(0.9,0.4),
+        legend.key.height = unit(0.3,'cm'),
+        legend.key.width = unit(0.2,'cm')); p2
+
+p1/p2 + plot_layout(heights = c(3,1)) +
+  plot_annotation(tag_levels = 'a', tag_suffix = ')') +
+  theme(plot.tag = element_text(size = 8))
+ggsave('Figures/Figure3_Cl_comparison_2.png',width = 6.5, height = 6, dpi = 500)
+
 
