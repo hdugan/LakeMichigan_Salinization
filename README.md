@@ -3,6 +3,16 @@ Data and code for assessing salinization trends in tributaries of Lake Michigan
 
 Author: Hilary Dugan
 
+## Folders:
+
+**Data:** Contains raw chloride data from 234 sampled tributaries in 2018. In addition, contains downloaded data from the Water Quality Portal (WQP folder), including download scripts, and USGS road salt estimates from Bock et al. 2018. 
+
+**Figures:** Manuscript figures. 
+
+**GIS:** .geojson file of Lake Michigan catchments, tributary flow points, and WQP sampling locations, needed to construct figures. 
+
+**R:** .R files to run analyses and make figures 
+
 ## Scripts written in:
 platform       x86_64-apple-darwin15.6.0   
 arch           x86_64                      
