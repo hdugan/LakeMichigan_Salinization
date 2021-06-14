@@ -88,18 +88,10 @@ top5load/sum(tribMean$chlorideLoad_annual_kgday)
 # Milwaukee Load
 MilwaukeeLoad/sum(tribMean$chlorideLoad_annual_kgday)
 
-
 tribMean %>% ungroup() %>% dplyr::select(streamName, chloride, chlorideLoad_annual_kgday, chlorideYield_kgdaykm2) %>% 
   arrange(desc(chlorideLoad_annual_kgday)) %>% 
   mutate(chlorideLoad_Tgyear = chlorideLoad_annual_kgday*365/1e3) %>% 
   mutate(percentLoad = chlorideLoad_annual_kgday/sum(tribMean$chlorideLoad_annual_kgday))
-#
-sum(tribMean$chlorideLoad_annual_kgday) * 1000 * 365 / miVol # g/m3 or mg/L
-
-# Time it would take for trips to fill Lake Michigan
-miVol / (sum(tribMean$Flow_median_m3s) * 365 * 24* 3600) # Volume m3 / flow in m3
-
-Flow = (sum(tribMean$Flow_median_m3s) / 1000) / (24*60*60) # m3/s
 
 # Values from Hunter et al 2015
 # https://www-sciencedirect-com.ezproxy.library.wisc.edu/science/article/pii/S0380133014002676?via%3Dihub#s0045
@@ -110,15 +102,4 @@ pm3s = pm3 / (365*24*60*60) # m3/s?
 # Evaporation is 600 mm /year
 em3 = (600/1000) * miArea # m3
 em3 / (365*24*60*60) # m3/s?
-
-# Runoff is 1245 m3/s
-# Multiple avg. cl 25.4 mg/L to total mass in a year
-# Chloride mass load
-cl.mg.year = (sum(tribMean$concArea)*1000) * 1245 * (60*60*24*365)
-cl.MT.year = cl.mg.year / 1e9 # convert from mg.year to metric tonnes/year (Tg)
-cl.mg.year / miVol / 1000 # amount Lake Michigan's volume would go up every year
-
-# Runoff percent of rain + runoff
-1245/(pm3s + 1245) # 42% of water inputs
-25.4*(1245/(pm3s + 1245)) + 1 * (1-1245/(pm3s + 1245)) # hydro weighted chloride concentration
 
