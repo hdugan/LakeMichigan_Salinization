@@ -69,7 +69,7 @@ tribMean %>% ungroup() %>% dplyr::select(streamName, chloride, chlorideLoad_kgda
 # 2957085 = 2957 metric tonnes/day
 2957*365 # metric tonnes per year 
 
-# Load from rain 
+# Load from rain (data from https://www.glerl.noaa.gov/data/dashboard/data/)
 0.5 * 0.917 * miArea / 1e12 #(metric tonnes from precipitation assuming 1 m/L rain conc. and 917 mm of rain)
 
 # Songnozi loads 1970s

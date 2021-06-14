@@ -4,12 +4,9 @@ library(ggspatial)
 library(rgdal)
 library(lubridate)
 
-# Tributary chloride data 
-trib_SiteInfo = read_csv('Data/LM_Tributary_SiteInfo.csv') %>% 
-  dplyr::select(hydroID_GLAHF, bottle_vial_ID, Population_Density_n_km2,Road_Density_kmroad_km2,MaxImperviousness,MeanImperviousness)
-
+# Read in Tributary chloride data 
 trib_Cl = read_csv('Data/LM_Tributary_Chloride.csv') %>% 
-  left_join(trib_SiteInfo) %>% 
+  # left_join(trib_SiteInfo) %>% 
   dplyr::mutate(concArea = chloride * Areakm2/112453) %>% 
   mutate(chlorideLoad_kgday = chloride * Flowlitersday/ 1000000) %>% 
   mutate(chlorideYield_kgdaykm2 = chlorideLoad_kgday/Areakm2) %>% 
