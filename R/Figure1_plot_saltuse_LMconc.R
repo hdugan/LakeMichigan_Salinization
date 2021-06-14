@@ -10,7 +10,7 @@ library(patchwork)
 
 # Read in WQP data
 data.EPA.df.MI = read_csv('Data/WQP/allLakeMichigan_EPA.csv')
-allD2 = read_csv('Data/WQP/allLakeMichigan.csv')
+allD2 = read_csv('Data/WQP/allLakeMichigan_filtered.csv')
 # Read in USGS salt use data
 saltuse.df = read_csv('Data/USGSsalt/saltuseDF.csv')
 

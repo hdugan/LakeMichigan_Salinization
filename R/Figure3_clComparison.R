@@ -2,6 +2,7 @@ library(sf)
 library(tidyverse)
 library(ggspatial)
 library(rgdal)
+library(lubridate)
 
 # Tributary chloride data 
 trib_SiteInfo = read_csv('Data/LM_Tributary_SiteInfo.csv') %>% 
@@ -11,12 +12,14 @@ trib_Cl = read_csv('Data/LM_Tributary_Chloride.csv') %>%
   left_join(trib_SiteInfo) %>% 
   dplyr::mutate(concArea = chloride * Areakm2/112453) %>% 
   mutate(chlorideLoad_kgday = chloride * Flowlitersday/ 1000000) %>% 
-  mutate(chlorideYield_kgdaykm2 = chlorideLoad_kgday/Areakm2)
+  mutate(chlorideYield_kgdaykm2 = chlorideLoad_kgday/Areakm2) %>% 
+  filter(streamName != 'Susan Creek')
 
 # WQP results
 wqp_sf = st_read('GIS/WQP_catchmentPoints.geojson') 
 # Tributary results
-tributary_sf = st_read('GIS/Tributary_catchmentPoints.geojson')
+tributary_sf = st_read('GIS/Tributary_catchmentPoints.geojson') %>% 
+  filter(streamName != 'Susan Creek')
 # Catchments
 catchments_sf = st_read('GIS/MI_catchments.geojson', stringsAsFactors = FALSE)
 
@@ -32,7 +35,7 @@ wqp.catchments <- wqp_sf %>%
 # Keep catchments with more than 50 data points
 wqp.catchments.n = wqp.catchments %>% group_by(hydroID_GLAHF) %>% mutate(n = n()) %>%
   filter(hydroID_GLAHF >= 0) %>% # Filter out interfluves 
-  filter(n > 50) %>% #Keep catchments with lots of data 
+  filter(n > 20) %>% #Keep catchments with lots of data 
   ungroup()
 
 # Improve list of catchment names
@@ -50,20 +53,35 @@ catchmentNames = as.data.frame(wqp.catchments.n) %>% group_by(hydroID_GLAHF) %>%
 
 # Labels for plotting to avoid overlap 
 catchmentLabels_a = catchmentNames %>% 
-  filter(Name %in% c('Pensaukee River','East Twin River','Portage-Burns Waterway', 'Oconto River','	White River','Ford River','Kalamazoo River'))
+  filter(Name %in% c('Pensaukee River','East Twin River','Portage-Burns Waterway', 'Oconto River','	White River','Ford River','Kalamazoo River', 'Bear River'))
 catchmentLabels_b = catchmentNames %>% 
-  filter(!Name %in% c('Pensaukee River','East Twin River','Portage-Burns Waterway', 'Oconto River','White River','Ford River','Kalamazoo River'))
+  filter(!Name %in% c('Pensaukee River','East Twin River','Portage-Burns Waterway', 'Oconto River','White River','Ford River','Kalamazoo River', 'Bear River'))
 
-p1 = ggplot(outletDist.df) +
+p1 = ggplot(wqp.catchments.n) +
   geom_hline(yintercept = 0, linetype = 2, size = 0.2) +
   geom_vline(aes(xintercept = logArea), linetype = 1, size = 0.1, col = 'grey80') +
   # All Tributary points 
   geom_point(data = tributary_sf,
-             aes(x = log(Areakm2), chloride), size = 0.8, color = 'gold', alpha = 0.5, stroke = 0) +
+             aes(x = log(Areakm2), chloride), size = 0.8, color = 'gold4', alpha = 0.5, stroke = 0) +
   # WQP boxplots 
-  geom_boxplot(aes(x = logArea, y = Result, group = logArea), width = 0.1,
-               size = 0.2, outlier.size = 0.5, outlier.shape = 21, outlier.stroke = 0.2, na.rm = TRUE,
-               position = position_identity()) +
+  # geom_boxplot(aes(x = logArea, y = Result, group = logArea), width = 0.1,
+  #              size = 0.2, outlier.size = 0.5, outlier.shape = 21, outlier.stroke = 0.2, na.rm = TRUE,
+  #              position = position_identity()) +
+  stat_summary(geom = "boxplot", 
+               aes(x = logArea, y = Result, group = logArea),
+               width = 0.1,
+               size = 0.2,
+               position = position_identity(),
+               fun.data = function(x) setNames(quantile(x, c(0.01, 0.25, 0.5, 0.75, 0.99)), 
+                                               c("ymin", "lower", "middle", "upper", "ymax"))) + 
+  stat_summary(geom = "boxplot", 
+               aes(x = logArea, y = Result, group = logArea),
+               width = 0.1, color = 'red4',
+               size = 0.3, outlier.size = 0.5, outlier.shape = 21, outlier.stroke = 0.2, na.rm = TRUE,
+               position = position_identity(),
+               fun.data = function(x) setNames(quantile(x, c(0.05, 0.25, 0.5, 0.75, 0.95)), 
+                                               c("ymin", "lower", "middle", "upper", "ymax"))) +
+
   # Points matching WQP
   geom_point(data = tributary_sf %>% filter(hydroID_GLAHF %in% outletDist.df$hydroID_GLAHF),
     aes(x = log(Areakm2), chloride), size = 0.8, color = 'red4', fill = 'gold', shape = 21) +
@@ -73,7 +91,7 @@ p1 = ggplot(outletDist.df) +
                                          name = bquote(Watershed~Area ~ (km^2))) +
   geom_text(data = catchmentLabels_b, aes(x = logArea, y = -150, group = logArea, label = Name),
             angle = 90, size = 1.8) +
-  geom_text(data = catchmentLabels_a, aes(x = logArea, y = 900, group = logArea, label = Name),
+  geom_text(data = catchmentLabels_a, aes(x = logArea, y = 700, group = logArea, label = Name),
             angle = 90, size = 1.8) +
   ylab(bquote(Chloride ~ (mg~L^-1))) +
   theme_bw(base_size = 8) +
@@ -81,9 +99,9 @@ p1 = ggplot(outletDist.df) +
   theme(axis.text.x.top = element_blank(),
         axis.title.x.top = element_blank(),
         panel.grid.major.x = element_blank()) +
-  ylim(-250,1000) +
+  ylim(-250,850) +
   NULL
-
+p1
 ggsave(plot = p1, 'Figures/Figure3_Cl_comparison.png',width = 6.5, height = 5, dpi = 500)
 
 
@@ -99,7 +117,6 @@ for (i in 1:length(hydroids)) {
   outletDist[[i]] = river %>% mutate(distanceOutlet_m = river %>% st_distance(outletPoint, by_element = TRUE)) 
 }
 
-# hydroids[which(!hydroids %in% unique(outletDist.df$hydroID_GLAHF))]
 outletDist.df <- dplyr::bind_rows(outletDist)
 WQP_tribs = outletDist.df %>% filter(distanceOutlet_m < units::set_units(1000, "m")) %>% 
   left_join(tribMean)
@@ -112,7 +129,7 @@ p2 = ggplot(WQP_tribs.median) +
   geom_abline(alpha = 0.5) +
   geom_point(aes(x = Result, y = chloride, fill = urban),  alpha = 1,
              size = 2, stroke = 0.1, shape = 21) +
-  scale_fill_distiller(palette = 'Spectral', name = '% Urban') +
+  scale_fill_distiller(palette = 'RdYlBu', name = '% Urban') +
   xlab(bquote(Median~Watershed~Chloride ~ (mg~L^-1))) +
   ylab(bquote(Tributary~Chloride ~ (mg~L^-1))) +
   theme_bw(base_size = 8) +

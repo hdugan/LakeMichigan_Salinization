@@ -13,7 +13,8 @@ world_gray <-  paste0('https://services.arcgisonline.com/arcgis/rest/services/Ca
 
 # Tributary results
 tributary_sf = st_read('GIS/Tributary_catchmentPoints.geojson') %>% 
-  st_transform(crs = 4269) 
+  st_transform(crs = 4269) %>% 
+  filter(streamName != 'Susan Creek')
 
 table(tributary_sf$Result_discrete)
 

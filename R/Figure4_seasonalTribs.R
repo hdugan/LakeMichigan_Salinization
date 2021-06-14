@@ -1,21 +1,22 @@
 library(lubridate)
 library(patchwork)
 
-# Tributary results
-tributary_sf = st_read('GIS/Tributary_catchmentPoints.geojson')
+# Load necessary data 
+source('R/Figure3_clComparison.R')
 
 plotSeason <- function(hydroid, dist = 10000) {
 # Filter for river
-  river = wqp.catchments %>% filter(hydroID_GLAHF == hydroid) %>% 
+  river = wqp.catchments %>% 
+    filter(hydroID_GLAHF == hydroid) %>% 
     mutate(month = month(ActivityStartDate))
   name = river$Name[1]
   # 
   # Points close to outlet
-  outletPoint = tributary_sf %>% filter(hydroID_GLAHF == hydroid)
+  outletPoint = tributary_sf %>% filter(hydroID_GLAHF == hydroid) %>% slice(1)
   
   Outlet = river %>% mutate(distanceOutlet = river %>% st_distance(outletPoint, by_element = TRUE)) %>% 
     filter(distanceOutlet < units::set_units(dist, "m")) 
-
+  urban = round(outletPoint$urban, 1) # percent urban
   # Get river name
   riverName = catchmentNames %>% filter(hydroID_GLAHF == hydroid) %>% pull(Name)
   
@@ -28,15 +29,21 @@ plotSeason <- function(hydroid, dist = 10000) {
     theme(plot.title = element_text(size = 8), 
           axis.title.x = element_blank())
   
-  p2 = ggplot(Outlet) +
-    geom_boxplot(aes(x = month, y = Result, group = month), outlier.size = 0.5, size = 0.2, fill = '#c1d6e3') +
+  p2 = ggplot(Outlet, aes(x = month, y = Result, group = month)) +
+    # geom_boxplot(aes(x = month, y = Result, group = month), outlier.size = 0.5, size = 0.2, fill = '#c1d6e3') +
+    
+    stat_summary(geom = "boxplot", 
+                 fill = '#c1d6e3', size = 0.2,
+                 fun.data = function(x) setNames(quantile(x, c(0.05, 0.25, 0.5, 0.75, 0.95)), 
+                                                 c("ymin", "lower", "middle", "upper", "ymax"))) +
     # ylab('Chloride (mg/L)') +
     ylab(bquote(Chloride ~ (mg~L^-1))) +
     scale_x_continuous(breaks = 1:12, labels = month.abb, limits = c(0.5,12.5)) +
-    labs(title = paste0(riverName,', < ',dist/1000,' km from outlet')) +
+    labs(title = paste0(riverName,', < ',dist/1000,' km from outlet, ',urban,'% urban')) +
     theme_bw(base_size = 8) +
     theme(plot.title = element_text(size = 8),
           axis.title.x = element_blank()); p2
+  
   return(p2 + p1 +
            plot_layout(widths = c(2,1))) 
 }
@@ -48,7 +55,7 @@ stj = plotSeason(2109534) # St. Joseph's River
 men = plotSeason(2109298, dist = 5000) # Menominee River
 musk = plotSeason(2109488, dist = 30000) # Muskegon River
 kal = plotSeason(2109506, dist = 10000) # Kalamazoo River
-man = plotSeason(2109428, dist = 10000) # Manistee River
+man = plotSeason(2109428, dist = 5000) # Manistee River
 manq = plotSeason(2109142, dist = 10000) # Manistique River
 
 milw = plotSeason(2109496, dist = 5000)  # Milwaukee
@@ -58,10 +65,10 @@ pike = plotSeason(2109515, dist = 5000) # Pike River
 oak = plotSeason(2109500, dist = 5000) # Oak Creek
 calumet = plotSeason(2109554, dist = 5000) # Calumet River
 
-manitowoc = plotSeason(2109449, dist = 10000) # Manitowoc River
-susan = plotSeason(2109222, dist = 5000) # Susan Creek
-escanaba = plotSeason(2109188, dist = 5000) # Escanaba River
-peer = plotSeason(2109454, dist = 15000) # Peer Marquette River
+# manitowoc = plotSeason(2109449, dist = 10000) # Manitowoc River
+# susan = plotSeason(2109222, dist = 5000) # Susan Creek
+# escanaba = plotSeason(2109188, dist = 5000) # Escanaba River
+# peer = plotSeason(2109454, dist = 15000) # Peer Marquette River
 
 
 fox/grand/stj/men/musk/kal/man/manq 
