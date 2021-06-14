@@ -123,6 +123,7 @@ allD = bind_rows(data.MI.df, data.WI.df) %>%
   bind_rows(data.IL.df)
 table(allD$StateCode, useNA = 'always')
 allD %>% filter(Result > 10000)
+write_csv(allD, 'WQP/allLakeMichigan.csv')
 
 # Lake Michigan chloride from WQP
 ggplot(allD) +
@@ -161,8 +162,25 @@ data.EPA.df = bindDF(data.EPA, sites.EPA) %>%
 unique(data.EPA.df$MonitoringLocationDescriptionText)
 # Isolate just Lake Michigan from EPA sites
 data.EPA.df.MI = data.EPA.df %>% filter(LongitudeMeasure <=-83.95 & LatitudeMeasure <46)
-# plot(data.EPA.df$LongitudeMeasure, data.EPA.df$LatitudeMeasure)
-# points(data.EPA.df.MI$LongitudeMeasure, data.EPA.df.MI$LatitudeMeasure, col = 'blue')
+plot(data.EPA.df$LongitudeMeasure, data.EPA.df$LatitudeMeasure)
+points(data.EPA.df.MI$LongitudeMeasure, data.EPA.df.MI$LatitudeMeasure, col = 'blue')
+ggplot(data.EPA.df.MI) +
+  geom_point(aes(ActivityStartDate, Result))
 
+# Isolate just Lake Ontario from EPA sites
+data.EPA.df.ON = data.EPA.df %>% filter(LongitudeMeasure >=-78.3 & LatitudeMeasure <46)
+plot(data.EPA.df$LongitudeMeasure, data.EPA.df$LatitudeMeasure)
+points(data.EPA.df.ON$LongitudeMeasure, data.EPA.df.ON$LatitudeMeasure, col = 'blue')
+ggplot(data.EPA.df.ON) +
+  geom_point(aes(ActivityStartDate, Result))
+
+# Isolate just Lake Erie from EPA sites
+data.EPA.df.Er = data.EPA.df %>% filter(LongitudeMeasure >=-83.95 & LatitudeMeasure <43)
+plot(data.EPA.df$LongitudeMeasure, data.EPA.df$LatitudeMeasure)
+points(data.EPA.df.Er$LongitudeMeasure, data.EPA.df.Er$LatitudeMeasure, col = 'blue')
+ggplot(data.EPA.df.Er) +
+  geom_point(aes(ActivityStartDate, Result))
+
+# Save EPA data
+write_csv(data.EPA.df, 'Data/WQP/allGreatLakes_EPA.csv')
 write_csv(data.EPA.df.MI, 'Data/WQP/allLakeMichigan_EPA.csv')
-
