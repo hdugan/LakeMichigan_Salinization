@@ -15,20 +15,23 @@ miVol = 4920 * 1000 * 1000 * 1000 #m3
 tribMean = trib_Cl %>% group_by(hydroID_GLAHF, streamName) %>% 
   summarise_all(list(mean)) %>% 
   # mutate(chloride = if_else(streamName == 'Milwaukee River',120, chloride)) %>% # for a test
-  mutate(concArea = chloride*(Areakm2/sum(tribMean$Areakm2))) %>% #just double checking
-  mutate(chlorideLoad_annual_kgday = chloride*(Flow_median_m3s*1000*24*3600)/ 1e6) #just double checking
+  mutate(concArea = chloride*Areakm2/sum(.$Areakm2)) %>% #just double checking
+  mutate(concFlow = chloride*Flow_median_m3s/sum(.$Flow_median_m3s)) %>% #just double checking
+  mutate(chlorideLoad_annual_kgday = chloride*Flow_median_m3s*(1000*24*3600)/ 1e6) #just double checking
 
 # Mean scaled by area
 sum(tribMean$concArea) # 25.4 mg/L
+# Mean scaled by flow 
+sum(tribMean$concFlow) # 27.2 mg/L
 # Mean not-scaled by area
 mean(tribMean$chloride) # 31.23 mg/L
 
-# Flow on that day vs annual 
+# Flow on sampling day vs annual 
 sum(tribMean$Flowlitersday)/24/3600/1000
 sum(tribMean$Flow_median_m3s)
 
 # Total load
-sum(tribMean$concArea) * sum(tribMean$Flow_median_m3s) * 3600*24*365 # grams
+sum(tribMean$concFlow) * sum(tribMean$Flow_median_m3s) * (1000*24*3600)/ 1e6 * (365 / 1e9) #kg_day --> Tg
 sum(tribMean$chlorideLoad_annual_kgday) * 365 / 1e9 # Tg
 
 # Years of observations
