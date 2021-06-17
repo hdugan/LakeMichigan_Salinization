@@ -42,6 +42,12 @@ ys = wqp_sf %>%
 # Percent of observations after 1990
 sum(ys %>% filter(year >= 1990) %>% pull(n)) / sum(ys$n)
 
+# Months of observations
+wqp_sf %>% 
+  st_set_geometry(NULL) %>% 
+  group_by(month = month(ActivityStartDate)) %>% 
+  tally()
+
 # Highest results from WQP
 # wqp_sf %>% 
 #   st_set_geometry(NULL) %>% filter(Result > 100) %>% arrange(desc(Result)) 
@@ -105,4 +111,25 @@ pm3s = pm3 / (365*24*60*60) # m3/s?
 # Evaporation is 600 mm /year
 em3 = (600/1000) * miArea # m3
 em3 / (365*24*60*60) # m3/s?
+
+
+
+# What percentage of the watershed did we sample (234 out of 239 watersheds)
+tributary_sf.median = st_read('GIS/Tributary_catchmentPoints.geojson') %>% 
+  filter(streamName != 'Susan Creek') %>%
+  group_by(GLHDID, HydroID) %>% 
+  summarise_if(is.numeric, median, na.rm = TRUE) 
+tribs_notsampled = st_read('GIS/MI_GLHD_WatershedPoint.geojson') %>% 
+  filter(!GLHDID %in% tributary_sf$GLHDID)
+# Catchments
+catchments_notinterfluve = st_read('GIS/MI_catchments.geojson', stringsAsFactors = FALSE) %>% 
+  filter(is.na(Interfluve))
+catchments_sampled = catchments_sf %>% filter(GLHDID %in% tributary_sf.median$GLHDID) 
+catchments_notsampled = catchments_sf %>% filter(GLHDID %in% tribs_notsampled$GLHDID) 
+
+s1 = sum(catchments_notinterfluve$Shape_Area) # Total area not interfluve
+s2 = sum(catchments_sampled$Shape_Area) # Total area sampled
+s3 = sum(catchments_notsampled$Shape_Area) # Total area not sampled
+s2/s1
+s3/s1
 
