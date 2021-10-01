@@ -14,12 +14,12 @@ trib_Cl = read_csv('Data/LM_Tributary_Chloride.csv') %>%
   filter(streamName != 'Susan Creek')
 
 # WQP results
-wqp_sf = st_read('GIS/WQP_catchmentPoints.geojson') 
+wqp_sf = st_read('GIS/WQP_catchmentPoints.geojson') %>% st_set_crs(6350)
 # Tributary results
-tributary_sf = st_read('GIS/Tributary_catchmentPoints.geojson') %>% 
+tributary_sf = st_read('GIS/Tributary_catchmentPoints.geojson') %>% st_set_crs(6350) %>% 
   filter(streamName != 'Susan Creek')
 # Catchments
-catchments_sf = st_read('GIS/MI_catchments.geojson', stringsAsFactors = FALSE)
+catchments_sf = st_read('GIS/MI_catchments.geojson', stringsAsFactors = FALSE) %>% st_set_crs(6350)
 
 # Intersect WQP data with Lake Michigan catchments
 wqp.catchments <- wqp_sf %>% 
@@ -81,7 +81,7 @@ p2 = ggplot(WQP_tribs.median) +
   geom_abline(alpha = 0.5) +
   geom_point(aes(x = Result, y = chloride, fill = urban),  alpha = 1,
              size = 2, stroke = 0.1, shape = 21) +
-  scale_fill_distiller(palette = 'RdYlBu', name = '% Urban') +
+  scale_fill_gradient2(low = 'chartreuse4', high = 'chocolate4', midpoint = 30, name = '% Urban') +
   xlab(bquote(Median~Watershed~Chloride ~ (mg~L^-1))) +
   ylab(bquote(Tributary~Chloride ~ (mg~L^-1))) +
   theme_bw(base_size = 8) +
@@ -95,21 +95,21 @@ p1 = ggplot(wqp.catchments.n) +
   geom_vline(aes(xintercept = logArea), linetype = 1, size = 0.1, col = 'grey80') +
   # All Tributary points 
   geom_point(data = tributary_sf,
-             aes(x = log(Areakm2), chloride), size = 0.8, color = 'gold4', alpha = 0.5, stroke = 0) +
+             aes(x = log(Areakm2), chloride), size = 0.8, color = 'gold3', alpha = 0.5, stroke = 0) +
   # WQP boxplots 
   # geom_boxplot(aes(x = logArea, y = Result, group = logArea), width = 0.1,
   #              size = 0.2, outlier.size = 0.5, outlier.shape = 21, outlier.stroke = 0.2, na.rm = TRUE,
   #              position = position_identity()) +
-  stat_summary(geom = "boxplot", 
+  stat_summary(geom = "errorbar", 
                aes(x = logArea, y = Result, group = logArea),
-               width = 0.1,
-               size = 0.2,
+               width = 0, color = 'wheat2',
+               size = 0.8,
                position = position_identity(),
                fun.data = function(x) setNames(quantile(x, c(0.01, 0.25, 0.5, 0.75, 0.99)), 
                                                c("ymin", "lower", "middle", "upper", "ymax"))) + 
   stat_summary(geom = "boxplot", 
                aes(x = logArea, y = Result, group = logArea),
-               width = 0.1, color = 'red4',
+               width = 0.1, color = 'chocolate4',
                size = 0.3, outlier.size = 0.5, outlier.shape = 21, outlier.stroke = 0.2, na.rm = TRUE,
                position = position_identity(),
                fun.data = function(x) setNames(quantile(x, c(0.05, 0.25, 0.5, 0.75, 0.95)), 
@@ -117,7 +117,7 @@ p1 = ggplot(wqp.catchments.n) +
   
   # Points matching WQP
   geom_point(data = tributary_sf %>% filter(hydroID_GLAHF %in% wqp.catchments.n$hydroID_GLAHF),
-             aes(x = log(Areakm2), chloride), size = 0.8, color = 'red4', fill = 'gold', shape = 21) +
+             aes(x = log(Areakm2), chloride), size = 0.8, color = 'chocolate4', fill = 'gold', shape = 21) +
   
   scale_x_continuous(expand = c(0,0.1), sec.axis = dup_axis(breaks = catchmentNames$logArea, labels = catchmentNames$Name),
                      breaks = log(c(10,100,1000,5000,10000)), labels = c(10,100,1000,5000,10000),
@@ -134,13 +134,12 @@ p1 = ggplot(wqp.catchments.n) +
         panel.grid.major.x = element_blank()) +
   ylim(-250,850) +
   NULL
-p1
+
 ggsave(plot = p1, 'Figures/Figure3_Cl_comparison.png',width = 6.5, height = 5, dpi = 500)
 
 
-
 p1/p2 + plot_layout(heights = c(3,1)) +
-  plot_annotation(tag_levels = 'a', tag_suffix = ')') +
+  plot_annotation(tag_levels = 'a', tag_suffix = ')') &
   theme(plot.tag = element_text(size = 8))
 ggsave('Figures/Figure3_Cl_comparison_2.png',width = 6.5, height = 6, dpi = 500)
 
