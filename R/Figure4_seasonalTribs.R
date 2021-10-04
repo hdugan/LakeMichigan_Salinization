@@ -3,6 +3,7 @@ library(patchwork)
 
 # Load necessary data 
 source('R/Figure3_clComparison.R')
+source('R/Figure2_michiganSalt_mapping.R') # For mapping
 
 plotSeason <- function(hydroid, dist = 10000) {
 # Filter for river
@@ -12,7 +13,7 @@ plotSeason <- function(hydroid, dist = 10000) {
   name = river$Name[1]
   # 
   # Points close to outlet
-  outletPoint = tributary_sf %>% filter(hydroID_GLAHF == hydroid) %>% slice(1)
+  outletPoint = st_read('GIS/Tributary_catchmentPoints.geojson') %>% st_set_crs(6350) %>% filter(hydroID_GLAHF == hydroid) %>% slice(1)
   
   Outlet = river %>% mutate(distanceOutlet = river %>% st_distance(outletPoint, by_element = TRUE)) %>% 
     filter(distanceOutlet < units::set_units(dist, "m")) 
@@ -44,8 +45,25 @@ plotSeason <- function(hydroid, dist = 10000) {
     theme(plot.title = element_text(size = 8),
           axis.title.x = element_blank()); p2
   
-  return(p2 + p1 +
-           plot_layout(widths = c(2,1))) 
+  map1 = ggplot(wqp_sf) +
+    geom_sf(data = catchments_sf_simple, fill = alpha('seagreen1',0.1), size = 0.1) +
+    geom_sf(data = catchments_sf_simple %>% filter(HydroID == hydroid), fill = alpha('darkolivegreen',0.8), size = 0.1) +
+    geom_sf(data = lakeMI_sf, size = 0, fill = alpha('lightsteelblue1',0.2)) +
+    geom_sf(data = tributary_sf %>% filter(hydroID_GLAHF == hydroid), aes(fill = Result_discrete), alpha = 1,
+            size = 1.5, stroke = 0.1, shape = 21) +
+    scale_fill_brewer(palette = 'RdYlBu', direction = -1, na.value = "grey90",
+                      breaks = levels(wqp_sf$Result_discrete),
+                      limits = levels(wqp_sf$Result_discrete),
+                      name = bquote(Chloride ~ (mg~L^-1))) +
+    theme_map() +
+    xlab('') + ylab('') +
+    theme(legend.position = "none",
+          axis.title.x = element_blank(),
+          text = element_text(size=10)) +
+    guides(colour = guide_legend(nrow = 1))
+ 
+  return(p2 + p1 + wrap_elements(full = map1, clip = F) + plot_layout(widths = c(2, 1, 0.4))) # for full map 
+  # return(p2 + p1 + map1 + plot_layout(widths = c(2,1, 0.3))) 
 }
 plotSeason(2109547, dist = 5000)
 
@@ -70,12 +88,10 @@ calumet = plotSeason(2109554, dist = 5000) # Calumet River
 # escanaba = plotSeason(2109188, dist = 5000) # Escanaba River
 # peer = plotSeason(2109454, dist = 15000) # Peer Marquette River
 
+fig4_1 = fox/grand/stj/men/musk/kal/man/manq 
+ggsave(plot = fig4_1, filename = 'Figures/Figure4_seasonalTribs_1.png',width = 6.5, height = 8, dpi = 500)
 
-fox/grand/stj/men/musk/kal/man/manq 
-ggsave('Figures/Figure4_seasonalTribs_1.png',width = 6.5, height = 8, dpi = 500)
-
-milw/root/trail/pike/oak/calumet
-ggsave('Figures/Figure4_seasonalTribs_2.png',width = 6, height = 6, dpi = 500)
-
+fig4_2 = milw/root/trail/pike/oak/calumet
+ggsave(plot = fig4_2, filename = 'Figures/Figure4_seasonalTribs_2.png',width = 6.5, height = 6, dpi = 500)
 
 

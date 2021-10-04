@@ -1,4 +1,14 @@
-# To assess if our chloride grab samples are representative of a 5-day mean, we analysed high-frequency specific conductance (SpC) records from two Lake Michigan tributaries from 2020 to 2021: (1) the Fox River at Green Bay, WI (USGS 040851385), which drains 16394.62 km2, and (2) the Manitowoc River at Manitowoc, WI (USGS 04085427), which drains 1362.33 km2. At both sites, SpC is measured at a sub-hourly frequency. First, we randomly sampled the datasets to downscale to an hourly timestep and subset the data to dates spanning June through September, as we were comparing to our summer samples. We did not exclude any storm flow. We then computed the 5-day mean and standard deviation. For each hourly observation, we computed whether the observation was within one standard deviation of the mean.
+# To assess if our chloride grab samples are representative of a 5-day mean, we
+# analysed high-frequency specific conductance (SpC) records from two Lake
+# Michigan tributaries from 2020 to 2021: (1) the Fox River at Green Bay, WI
+# (USGS 040851385), which drains 16394.62 km2, and (2) the Manitowoc River at
+# Manitowoc, WI (USGS 04085427), which drains 1362.33 km2. At both sites, SpC is
+# measured at a sub-hourly frequency. First, we randomly sampled the datasets to
+# downscale to an hourly timestep and subset the data to dates spanning June
+# through September, as we were comparing to our summer samples. We did not
+# exclude any storm flow. We then computed the 5-day mean and standard
+# deviation. For each hourly observation, we computed whether the observation
+# was within one standard deviation of the mean.
 
 library(tidyverse)
 library(lubridate)
