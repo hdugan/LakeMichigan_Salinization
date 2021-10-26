@@ -116,14 +116,14 @@ em3 / (365*24*60*60) # m3/s?
 
 
 # What percentage of the watershed did we sample (234 out of 239 watersheds)
-tributary_sf.median = st_read('GIS/Tributary_catchmentPoints.geojson') %>% 
+tributary_sf.median = st_read('GIS/Tributary_catchmentPoints.geojson') %>% st_set_crs(6350) %>% 
   filter(streamName != 'Susan Creek') %>%
   group_by(GLHDID, HydroID) %>% 
   summarise_if(is.numeric, median, na.rm = TRUE) 
-tribs_notsampled = st_read('GIS/MI_GLHD_WatershedPoint.geojson') %>% 
+tribs_notsampled = st_read('GIS/MI_GLHD_WatershedPoint.geojson') %>% st_set_crs(6350) %>% 
   filter(!GLHDID %in% tributary_sf$GLHDID)
 # Catchments
-catchments_notinterfluve = st_read('GIS/MI_catchments.geojson', stringsAsFactors = FALSE) %>% 
+catchments_notinterfluve = st_read('GIS/MI_catchments.geojson', stringsAsFactors = FALSE) %>% st_set_crs(6350) %>% 
   filter(is.na(Interfluve))
 catchments_sampled = catchments_sf %>% filter(GLHDID %in% tributary_sf.median$GLHDID) 
 catchments_notsampled = catchments_sf %>% filter(GLHDID %in% tribs_notsampled$GLHDID) 
