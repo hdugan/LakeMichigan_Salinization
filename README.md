@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/374733107.svg)](https://zenodo.org/badge/latestdoi/374733107)
+
 # LakeMichigan_Salinization
 Data and code for assessing salinization trends in tributaries of Lake Michigan
 
