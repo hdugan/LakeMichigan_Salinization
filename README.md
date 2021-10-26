@@ -1,5 +1,8 @@
 [![DOI](https://zenodo.org/badge/374733107.svg)](https://zenodo.org/badge/latestdoi/374733107)
 
+See also data release: 
+Mooney, R.J., E.H. Stanley, H.A. Dugan, W.C. Rosenthal, L.A. Rock, A.D. Kendall, and P.B. McIntyre. 2021. Water chemistry data from synoptic sampling of 235 Lake Michigan tributaries: 10-15 July, 2018 ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/3d306ae39b665802675503591358769f.
+
 # LakeMichigan_Salinization
 Data and code for assessing salinization trends in tributaries of Lake Michigan
 
